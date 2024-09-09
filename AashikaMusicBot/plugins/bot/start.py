@@ -25,16 +25,11 @@ from AashikaMusicBot.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS
 from strings import get_string
 
-
-
 AASHIKA_PICS = [
-"https://graph.org/file/1df484ee2b80ec2e2bd2e.jpg",
-"https://graph.org/file/0dfcbd2935f41b21af907.jpg",
-"https://graph.org/file/e02fcc6bbfa0a882d6c8b.jpg",
-
+    "https://graph.org/file/1df484ee2b80ec2e2bd2e.jpg",
+    "https://graph.org/file/0dfcbd2935f41b21af907.jpg",
+    "https://graph.org/file/e02fcc6bbfa0a882d6c8b.jpg",
 ]
-
-
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
@@ -83,12 +78,15 @@ async def start_pm(client, message: Message, _):
                 ]
             )
             await m.delete()
-            await app.send_photo(
-                chat_id=message.chat.id,
-                photo=thumbnail,
-                caption=searched_text,
-                reply_markup=key,
-            )
+            try:
+                await app.send_photo(
+                    chat_id=message.chat.id,
+                    photo=thumbnail,
+                    caption=searched_text,
+                    reply_markup=key,
+                )
+            except Exception as e:
+                print(f"Error sending photo: {e}")
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
@@ -107,7 +105,6 @@ async def start_pm(client, message: Message, _):
                 text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
-
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
 @LanguageStart
 async def start_gp(client, message: Message, _):
@@ -120,7 +117,6 @@ async def start_gp(client, message: Message, _):
     )
     return await add_served_chat(message.chat.id)
 
-
 @app.on_message(filters.new_chat_members, group=-1)
 async def welcome(client, message: Message):
     for member in message.new_chat_members:
@@ -130,8 +126,8 @@ async def welcome(client, message: Message):
             if await is_banned_user(member.id):
                 try:
                     await message.chat.ban_member(member.id)
-                except:
-                    pass
+                except Exception as ex:
+                    print(f"Error banning member: {ex}")
             if member.id == app.id:
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
@@ -161,4 +157,4 @@ async def welcome(client, message: Message):
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
         except Exception as ex:
-            print(ex)
+            print(f"Error in welcome handler: {ex}")
