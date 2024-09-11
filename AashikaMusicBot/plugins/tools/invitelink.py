@@ -1,19 +1,20 @@
 from AashikaMusicBot import app
 from pyrogram import Client, filters
-from pyrogram.errors import ChatIdInvalid, ChatAdminRequired, ChatNotModified, FloodWait, InviteHashExpired, UserNotParticipant
+from pyrogram.errors import FloodWait
 import os
-from pyrogram.types import Message
 
 # Define the owner's user ID
 OWNER_ID = 7005020577  # Replace this with the actual owner's user ID
 
+# Function to check if the user is the owner
+def is_owner(user_id):
+    return user_id == OWNER_ID
+
 # Restrict access to the /givelink command to the owner only
 @app.on_message(filters.command("givelink"))
 async def give_link_command(client, message):
-    # Check if the message sender is the owner
-    if message.from_user.id != OWNER_ID:
-        await message.reply("You are not authorized to use this command.")
-        return
+    if not is_owner(message.from_user.id):
+        return  # Ignore the message if it's not from the owner
 
     # Generate an invite link for the chat where the command is used
     chat = message.chat.id
@@ -23,14 +24,11 @@ async def give_link_command(client, message):
     except Exception as e:
         await message.reply(f"Error: {str(e)}")
 
-
 # Restrict access to the /link and /invitelink commands to the owner only
 @app.on_message(filters.command(["link", "invitelink"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"]))
-async def link_command_handler(client: Client, message: Message):
-    # Check if the message sender is the owner
-    if message.from_user.id != OWNER_ID:
-        await message.reply("You are not authorized to use this command.")
-        return
+async def link_command_handler(client, message):
+    if not is_owner(message.from_user.id):
+        return  # Ignore the message if it's not from the owner
 
     if len(message.command) != 2:
         await message.reply("Invalid usage. Correct format: /link group_id")
